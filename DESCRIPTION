@@ -1,0 +1,14 @@
+Package: ExtremeEvents
+Type: Package
+Title: Calcul des Evenements Extrêmes de Sécheresse à Partir des Données BioSIM
+Version: 0.1.0
+Authors@R: c(person("Catherine", "Chagon", email = "catherine.chagnon.2@ulaval.ca", role = c("aut", "cre", "cph")))
+Description: Calcul des Evenements Extrêmes de Sécheresse à Partir des Donnée BioSim.
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 3.6.0)
+Imports: 
+    dplyr,
+    lubridate
+LazyData: true
+RoxygenNote: 7.3.1
