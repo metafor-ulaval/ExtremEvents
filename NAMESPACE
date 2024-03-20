@@ -2,4 +2,3 @@
 
 export(drought)
 export(growing_season)
-export(growing_season_and_drought_yearly)
