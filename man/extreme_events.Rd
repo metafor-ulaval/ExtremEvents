@@ -22,7 +22,7 @@ drought(
 )
 }
 \arguments{
-\item{data}{data.frame BioSIM data}
+\item{data}{data.frame BioSIM data, model Climatic Daily}
 
 \item{min_growing_day}{jour julien, Default 15 avril}
 

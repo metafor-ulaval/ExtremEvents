@@ -3,7 +3,7 @@
 #' Calcul de la saison de croissance et de la sécheresse à partir des données BioSIM.
 #' growing_season_and_drought_yearly est la fonction principale qui fait tout.
 #'
-#' @param data data.frame BioSIM data
+#' @param data data.frame BioSIM data, model Climatic Daily
 #' @param min_growing_day  jour julien, Default 15 avril
 #' @param max_growing_day jour julien, Default 15 août
 #' @param threshold_growth seuil de température pour la croissance
