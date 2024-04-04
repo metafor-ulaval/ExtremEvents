@@ -30,6 +30,7 @@ lsf(
 This function identifies late spring frost (LSF) events occurring during the growing season. It computes a LSF severity index, which we defined as the number of growing degree-days cumulated before the frost events.
 The temperature threshold (Celsius degrees) for identifying a LSF event is defined by the \code{threshold_frost} argument. This threshold should represent a temperature below which damage to the tree are expected.
 The growing degree-days cumulate from the start of the growing season until a LSF occurs. The temperature above which to cumulate growing degree-days can be specified by the \code{threshold_growth} argument.
-When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{lsfevent_dd}) and the total amount of GDD cumulated before the last frost event (column \code{lsf_dd}).
-When \code{by_year = FALSE}, the function returns as data frame containing daily values of \code{lsfevent_dd} and \code{lsf_dd}. This may be used to characterize each LSF event.
+When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{lsfevent_dd}) and the total amount of GDD cumulated before the last frost event of the growing season (column \code{lsfGS_dd}).
+Similarly, the function returns a columns for the number of days with mean temperature abov the growth threshold before a the worst LSF event (column \code{lsfevent_days}, and the total number of days before the last LSF event of the growing season (column \code{lsfGS_days}).
+When \code{by_year = FALSE}, the function returns as data frame containing daily values of \code{lsfevent_dd} and \code{lsfGS_dd}. This may be used to characterize each LSF event.
 }

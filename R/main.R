@@ -52,8 +52,9 @@ growing_season = function(data, min_growing_day = 115, min_ending_day = 227, thr
 #' Compute drought indices based on daily climate
 #'
 #' This function identifies drought events occurring during the growing season and computes drought indices based on a precipitation threshold. The drought event starts whenever the daily precipitation is below that specified by the \code{threshold_prec} argument and ends when the daily precipitation is above this threshold.
-#' The function cumulates degree-days (above the threshold indicated by \code{threshold_growth}) during the drought events. When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{droughtevent_dd}) and the total amount of GDD cumulated during all the drought events that occurred in the entire growing season  (column \code{drought_dd}).
-#' When \code{by_year = FALSE}, the function returns as data frame containing daily values of droughtevent_dd and drought_dd. This may be used to characterize each drought event.
+#' The function cumulates degree-days (above the threshold indicated by \code{threshold_growth}) during the drought events. When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{droughtevent_dd}) and the total amount of GDD cumulated during all the drought events that occurred in the entire growing season  (column \code{droughtGS_dd}).
+#' The function also returns the maximum number of days for a single drought event \code{droughtevent_days}) and the total number of drought days over the entire growing season \code{droughtGS_days}).
+#' When \code{by_year = FALSE}, the function returns a data frame containing daily values. This may be used to characterize each drought event.
 #'
 #' @param data Data frame created from the generateWeather() function of BioSIM generated using the "Climatic_Daily" model
 #' @param data_GS data.frame produced by \link{growing_season}
@@ -73,7 +74,7 @@ growing_season = function(data, min_growing_day = 115, min_ending_day = 227, thr
 #'
 drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_year = TRUE)
 {
-  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- growing_dd <- Prcp <- drought_dd <- droughtevent_dd <- drought_days <- droughtevent_days <- NULL
+  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- growing_dd <- Prcp <- droughtGS_dd <- droughtevent_dd <- drought_dd <- droughtGS_days <- droughtevent_days <- NULL
 
   data$yday <- lubridate::yday(as.Date(paste(data$Year, data$Month, data$Day, sep = "-")))
 
@@ -81,22 +82,23 @@ drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_y
 
   data <- dplyr::mutate(data,
                         GS_cond = yday > GSstart & yday < GSend,
-                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - 4, 0))
+                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - threshold_growth, 0),
+                        drought_dd = ifelse(GS_cond & Tair > threshold_growth& Prcp <= threshold_prec, growing_dd, 0))
 
   data <- data |>
     dplyr::group_by(KeyID, Year)  |>
-    dplyr::mutate(drought_dd = ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, cumsum_reset(growing_dd, reset = GS_cond), 0), #somme des degrés-jours pour toutes les sécheresses de la saison
-           droughtevent_dd = cumsum_reset(ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, growing_dd, 0), reset =  0),
-           drought_days =  ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, cumsum_reset(1, reset = GS_cond), 0),
+    dplyr::mutate(droughtGS_dd = ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, cumsum(drought_dd), 0), #somme des degrés-jours pour toutes les sécheresses de la saison
+           droughtevent_dd = cumsum_reset(ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, drought_dd, 0), reset =  0),
+           droughtGS_days =  ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, cumsum(drought_dd !=0), 0),
            droughtevent_days = cumsum_reset(ifelse(GS_cond & Tair > threshold_growth & Prcp <= threshold_prec, 1, 0), reset =  0))
 
   if (by_year)
   {
     data = dplyr::group_by(data, KeyID, Year) |>
-      dplyr::summarise(drought_dd = max(drought_dd, na.rm = TRUE),
+      dplyr::summarise(droughtGS_dd = max(droughtGS_dd, na.rm = TRUE),
                        droughtevent_dd = max(droughtevent_dd, na.rm = TRUE),
-                       drought_days = max(drought_days, na.rm = TRUE),
-                       droughtevent_days = max(droughtevent_days, naér. = TRUE))
+                       droughtGS_days = max(droughtGS_days, na.rm = TRUE),
+                       droughtevent_days = max(droughtevent_days, na.rm = TRUE))
   }
 
   data
@@ -109,8 +111,9 @@ drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_y
 #' This function identifies late spring frost (LSF) events occurring during the growing season. It computes a LSF severity index, which we defined as the number of growing degree-days cumulated before the frost events.
 #' The temperature threshold (Celsius degrees) for identifying a LSF event is defined by the \code{threshold_frost} argument. This threshold should represent a temperature below which damage to the tree are expected.
 #' The growing degree-days cumulate from the start of the growing season until a LSF occurs. The temperature above which to cumulate growing degree-days can be specified by the \code{threshold_growth} argument.
-#' When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{lsfevent_dd}) and the total amount of GDD cumulated before the last frost event (column \code{lsf_dd}).
-#' When \code{by_year = FALSE}, the function returns as data frame containing daily values of \code{lsfevent_dd} and \code{lsf_dd}. This may be used to characterize each LSF event.
+#' When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{lsfevent_dd}) and the total amount of GDD cumulated before the last frost event of the growing season (column \code{lsfGS_dd}).
+#' Similarly, the function returns a columns for the number of days with mean temperature abov the growth threshold before a the worst LSF event (column \code{lsfevent_days}, and the total number of days before the last LSF event of the growing season (column \code{lsfGS_days}).
+#' When \code{by_year = FALSE}, the function returns as data frame containing daily values of \code{lsfevent_dd} and \code{lsfGS_dd}. This may be used to characterize each LSF event.
 #'
 #' @param data Data frame created from the generateWeather() function of BioSIM generated using the "Climatic_Daily" model
 #' @param data_GS data.frame produced by \link{growing_season}
@@ -122,7 +125,7 @@ drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_y
 
 lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, threshold_lsf = 196, by_year = TRUE)
 {
-  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- Tmin <- growing_dd <- Prcp <- drought_dd <- droughtevent_dd <- lsf_day <- lsf_dd <- lsfevent_dd <- lsf_day_max <- threshold_lsf <- lsf_day <-NULL
+  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- Tmin <- growing_dd <- Prcp <- lsfGS_dd <- lsfGS_days <- lsfevent_days <- lsfevent_dd <- threshold_frost <- lsf_day_max <- threshold_lsf <- lsf_day <-NULL
 
   data$yday <- lubridate::yday(as.Date(paste(data$Year, data$Month, data$Day, sep = "-")))
 
@@ -130,9 +133,8 @@ lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, thresh
 
   data <- dplyr::mutate(data,
                         GS_cond = yday > GSstart & yday < GSend,
-                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - 4, 0))
-
-  data <- data |> dplyr::mutate(lsf_day = ifelse(GS_cond & Tmin <= threshold_frost & yday <= threshold_lsf, yday, 0))
+                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - threshold_growth, 0),
+                        lsf_day = ifelse(GS_cond & Tmin <= threshold_frost & yday <= threshold_lsf, yday, 0)) #marks days during which the temperature drop below the frost threshold
 
   data_lsf <- data |> dplyr::group_by(KeyID, Year) |>
     dplyr::summarise(lsf_day_max = max(lsf_day, na.rm = TRUE))
@@ -141,12 +143,17 @@ lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, thresh
 
   data <- data |> dplyr::group_by(KeyID,Year)|>
     dplyr::mutate(lsfevent_dd = cumsum_reset(ifelse(GS_cond & yday <= lsf_day_max & Tmin >= threshold_frost, growing_dd, 0), reset = 0), #somme des degrés-jours pour toutes les sécheresses de la saison
-                                lsf_dd = ifelse(GS_cond & yday <= lsf_day_max & Tmin >= threshold_frost, cumsum_reset(growing_dd, reset = GS_cond), 0))
+                  lsfGS_dd = ifelse(GS_cond & yday <= lsf_day_max & Tmin >= threshold_frost, cumsum_reset(growing_dd, reset = GS_cond), 0),
+                  lsfGS_days =  ifelse(GS_cond & yday <= lsf_day_max & Tmin >= threshold_frost, cumsum(lsfevent_dd !=0), 0),
+                  lsfevent_days = cumsum_reset(ifelse(GS_cond & yday <= lsf_day_max & Tmin >= threshold_frost, 1, 0), reset =  0))
+
   if (by_year)
   {
     data = dplyr::group_by(data, KeyID, Year) |>
-      dplyr::summarise(lsf_dd = max(lsf_dd, na.rm = TRUE),
-                       lsfevent_dd = max(lsfevent_dd, na.rm = TRUE))
+      dplyr::summarise(lsfGS_dd = max(lsfGS_dd, na.rm = TRUE),
+                       lsfevent_dd = max(lsfevent_dd, na.rm = TRUE),
+                       lsfGS_days = max(lsfGS_days, na.rm = TRUE),
+                       lsfevent_days = max(lsfevent_days, na.rm = TRUE))
   }
 
   data

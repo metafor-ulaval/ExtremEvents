@@ -25,8 +25,9 @@ drought(
 }
 \description{
 This function identifies drought events occurring during the growing season and computes drought indices based on a precipitation threshold. The drought event starts whenever the daily precipitation is below that specified by the \code{threshold_prec} argument and ends when the daily precipitation is above this threshold.
-The function cumulates degree-days (above the threshold indicated by \code{threshold_growth}) during the drought events. When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{droughtevent_dd}) and the total amount of GDD cumulated during all the drought events that occurred in the entire growing season  (column \code{drought_dd}).
-When \code{by_year = FALSE}, the function returns as data frame containing daily values of droughtevent_dd and drought_dd. This may be used to characterize each drought event.
+The function cumulates degree-days (above the threshold indicated by \code{threshold_growth}) during the drought events. When \code{by_year = TRUE}, the function returns a data frame containing the maximum GDD for a single event (column \code{droughtevent_dd}) and the total amount of GDD cumulated during all the drought events that occurred in the entire growing season  (column \code{droughtGS_dd}).
+The function also returns the maximum number of days for a single drought event \code{droughtevent_days}) and the total number of drought days over the entire growing season \code{droughtGS_days}).
+When \code{by_year = FALSE}, the function returns a data frame containing daily values. This may be used to characterize each drought event.
 }
 \examples{
 file = system.file("extdata", "dayclim_GS.txt", package="ExtremeEvents")
