@@ -125,7 +125,7 @@ drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_y
 
 lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, threshold_lsf = 196, by_year = TRUE)
 {
-  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- Tmin <- growing_dd <- Prcp <- lsfGS_dd <- lsfGS_days <- lsfevent_days <- lsfevent_dd <- threshold_frost <- lsf_day_max <- threshold_lsf <- lsf_day <-NULL
+  KeyID <- Year <- yday <- GSstart <- GSend <- GS_cond <- Tair <- Tmin <- growing_dd <- Prcp <- lsfGS_dd <- lsfGS_days <- lsfevent_days <- lsfevent_dd <- lsf_day_max <- lsf_day <-NULL
 
   data$yday <- lubridate::yday(as.Date(paste(data$Year, data$Month, data$Day, sep = "-")))
 
@@ -133,8 +133,9 @@ lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, thresh
 
   data <- dplyr::mutate(data,
                         GS_cond = yday > GSstart & yday < GSend,
-                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - threshold_growth, 0),
-                        lsf_day = ifelse(GS_cond & Tmin <= threshold_frost & yday <= threshold_lsf, yday, 0)) #marks days during which the temperature drop below the frost threshold
+                        growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - threshold_growth, 0))
+
+  data <- dplyr::mutate(data,  lsf_day = ifelse(GS_cond & Tmin <= threshold_frost & yday <= threshold_lsf, yday, 0)) #marks days during which the temperature drop below the frost threshold
 
   data_lsf <- data |> dplyr::group_by(KeyID, Year) |>
     dplyr::summarise(lsf_day_max = max(lsf_day, na.rm = TRUE))
