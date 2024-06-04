@@ -98,6 +98,7 @@ drought = function(data, data_GS, threshold_growth = 4, threshold_prec = 0, by_y
       dplyr::summarise(droughtGS_dd = max(droughtGS_dd, na.rm = TRUE),
                        droughtevent_dd = max(droughtevent_dd, na.rm = TRUE),
                        droughtGS_days = max(droughtGS_days, na.rm = TRUE),
+                       droughtevent_firstday = yday[which.max(droughtevent_days)] - max(droughtevent_days, na.rm = TRUE),
                        droughtevent_days = max(droughtevent_days, na.rm = TRUE))
   }
 
@@ -154,6 +155,7 @@ lsf = function(data, data_GS, threshold_frost = -4, threshold_growth = 4, thresh
       dplyr::summarise(lsfGS_dd = max(lsfGS_dd, na.rm = TRUE),
                        lsfevent_dd = max(lsfevent_dd, na.rm = TRUE),
                        lsfGS_days = max(lsfGS_days, na.rm = TRUE),
+                       lsfevent_firstday = yday[which.max(lsfevent_days)]- max(lsfevent_days, na.rm = TRUE),
                        lsfevent_days = max(lsfevent_days, na.rm = TRUE))
   }
 
