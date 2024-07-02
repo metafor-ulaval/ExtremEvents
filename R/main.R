@@ -47,11 +47,11 @@ growing_season = function(data, min_growing_day = 115, min_ending_day = 227, thr
                   GSgdd = cumsum(ifelse(GS_cond & Tair > threshold_growth, growing_dd, 0)),
                   GSprec = cumsum(ifelse(GS_cond, Prcp, 0)),
                   GSSRad = cumsum(ifelse(GS_cond, SRad, 0)),
-                  days_of_rain = cumsum(ifelse(GS_cond & Prcp >= threshold_rain, 1, 0)))
+                  GSDaysOfRain = cumsum(ifelse(GS_cond & Prcp >= threshold_rain, 1, 0)))
 
   data <- data |> dplyr::group_by(KeyID, Year) |>
     dplyr::summarise(GSstart = min(GSstart, na.rm = TRUE), GSend = min(GSend, na.rm = TRUE), GSgdd = max(GSgdd, na.rm = TRUE), GSprec = max(GSprec, na.rm = TRUE),
-                     GSSRad = max(GSSRad), GSDaysOfRain = max(days_of_rain))
+                     GSSRad = max(GSSRad), GSDaysOfRain = max(GSDaysOfRain))
 
   data
 }
