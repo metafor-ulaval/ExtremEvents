@@ -10,15 +10,19 @@
 #' @param min_ending_day Minimum ending date for the growing season (year day format). This minimum data is used to avoid late spring forest from inducing the end of the growing season.
 #' @param threshold_growth Temperature threshold (Celsius degrees) for inducing growth. This threshold is used to induce the start of the growing season (after the 5th day during which the mean daily temperature reaches this threshold), and for calculating growing season growing degree-days, which are computed based on this threshold.
 #' @param threshold_dormancy Temperature threshold (Celsius degrees) for inducing dormancy This threshold is used to induce the end of the growing season (after the 5th day during which the minimum daily temperature falls below this threshold).
+#' @param threshold_rain Quantity of rain in mm to count the day as a day of rain during the growing season.
 #' @export
+#' @return A data.frame with the following columns: KeyID, Year, GSstart (first day of the growing season),
+#' GSend (last day of the growing season), GSgdd (??), GSprec (total precipitation during the growing season),
+#' GSRad (total radiation during the growing season), GSDaysOfRain
+#' (number of days of rain with a precipitation above the input threshold during the growing season).
 #' @examples
 #' file = system.file("extdata", "dayclim_GS.txt", package="ExtremeEvents")
 #' data <- read.table(file)
 #'
 #' GS = growing_season(data)
 #' GS
-
-growing_season = function(data, min_growing_day = 115, min_ending_day = 227, threshold_growth = 4, threshold_dormancy = 0)
+growing_season = function(data, min_growing_day = 115, min_ending_day = 227, threshold_growth = 4, threshold_dormancy = 0, threshold_rain = 2)
 {
   Tmax <- Tmin <- yday <- days_above4 <- days_below0 <- sum_above4 <- sum_below0 <- KeyID <- Year <- GSstart <- GSend <- GS_cond <- Tair <- growing_dd <- Prcp <- GSgdd <- GSprec <- NULL
 
@@ -41,10 +45,13 @@ growing_season = function(data, min_growing_day = 115, min_ending_day = 227, thr
     dplyr::mutate(GS_cond = yday > GSstart & yday < GSend,
                   growing_dd = ifelse(GS_cond & Tair > threshold_growth,  Tair - 4, 0),
                   GSgdd = cumsum(ifelse(GS_cond & Tair > threshold_growth, growing_dd, 0)),
-                  GSprec = cumsum(ifelse(GS_cond, Prcp, 0)))
+                  GSprec = cumsum(ifelse(GS_cond, Prcp, 0)),
+                  GSSRad = cumsum(ifelse(GS_cond, SRad, 0)),
+                  days_of_rain = cumsum(ifelse(GS_cond & Prcp >= threshold_rain, 1, 0)))
 
   data <- data |> dplyr::group_by(KeyID, Year) |>
-    dplyr::summarise(GSstart = min(GSstart, na.rm = TRUE), GSend = min(GSend, na.rm = TRUE), GSgdd = max(GSgdd, na.rm = TRUE), GSprec = max(GSprec, na.rm = TRUE))
+    dplyr::summarise(GSstart = min(GSstart, na.rm = TRUE), GSend = min(GSend, na.rm = TRUE), GSgdd = max(GSgdd, na.rm = TRUE), GSprec = max(GSprec, na.rm = TRUE),
+                     GSSRad = max(GSSRad), GSDaysOfRain = max(days_of_rain))
 
   data
 }

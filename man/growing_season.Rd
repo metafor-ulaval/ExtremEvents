@@ -9,7 +9,8 @@ growing_season(
   min_growing_day = 115,
   min_ending_day = 227,
   threshold_growth = 4,
-  threshold_dormancy = 0
+  threshold_dormancy = 0,
+  threshold_rain = 2
 )
 }
 \arguments{
@@ -22,6 +23,14 @@ growing_season(
 \item{threshold_growth}{Temperature threshold (Celsius degrees) for inducing growth. This threshold is used to induce the start of the growing season (after the 5th day during which the mean daily temperature reaches this threshold), and for calculating growing season growing degree-days, which are computed based on this threshold.}
 
 \item{threshold_dormancy}{Temperature threshold (Celsius degrees) for inducing dormancy This threshold is used to induce the end of the growing season (after the 5th day during which the minimum daily temperature falls below this threshold).}
+
+\item{threshold_rain}{Quantity of rain in mm to count the day as a day of rain during the growing season.}
+}
+\value{
+A data.frame with the following columns: KeyID, Year, GSstart (first day of the growing season),
+GSend (last day of the growing season), GSgdd (??), GSprec (total precipitation during the growing season),
+GSRad (total radiation during the growing season), GSDaysOfRain
+(number of days of rain with a precipitation above the input threshold during the growing season).
 }
 \description{
 Compute growing season start and end dates, growing degree-day (Celsius degrees), and precipitation (mm), based on the output of the \code{generateWeather()} function using the model "Climatic_Daily"of the \code{BioSIM} package.
