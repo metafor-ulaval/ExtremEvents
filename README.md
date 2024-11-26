@@ -1,6 +1,6 @@
 # ExtremeEvents
 
-Calcul de la saison de croissance et de la sécheresse à partir des données BioSIM
+Compute growing season and extreme event indices (drought and late spring frosts) from daily meteorogical data extracted using BioSIMR
 
 ## Installation
 
